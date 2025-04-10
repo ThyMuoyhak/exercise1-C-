@@ -1,0 +1,187 @@
+using System;
+using System.Drawing;
+using System.Windows.Forms;
+
+namespace WindowsFormsApp1
+{
+    public partial class exercise : Form
+    {
+        private DataGridView seatGrid;
+        private TextBox rowTextBox;
+        private TextBox columnTextBox;
+        private Button submitButton;
+        private Label priceLabel;
+
+        public exercise()
+        {
+            InitializeComponent();
+            CreateDynamicControls();
+            InitializeSeatGrid();
+        }
+
+        private void CreateDynamicControls()
+        {
+            // Title label
+            var titleLabel = new Label
+            {
+                Text = "Seat Pricing Chart",
+                Font = new Font("Arial", 16, FontStyle.Bold),
+                AutoSize = true,
+                Location = new Point(20, 20)
+            };
+            this.Controls.Add(titleLabel);
+
+            // Row input
+            var rowLabel = new Label
+            {
+                Text = "Enter Row:",
+                Location = new Point(20, 60),
+                AutoSize = true
+            };
+            this.Controls.Add(rowLabel);
+
+            rowTextBox = new TextBox
+            {
+                Location = new Point(100, 60),
+                Width = 50
+            };
+            this.Controls.Add(rowTextBox);
+
+            // Column input
+            var columnLabel = new Label
+            {
+                Text = "Enter Column:",
+                Location = new Point(20, 90),
+                AutoSize = true
+            };
+            this.Controls.Add(columnLabel);
+
+            columnTextBox = new TextBox
+            {
+                Location = new Point(100, 90),
+                Width = 50
+            };
+            this.Controls.Add(columnTextBox);
+
+            // Submit button
+            submitButton = new Button
+            {
+                Text = "Find Seat",
+                Location = new Point(170, 80),
+                Size = new Size(80, 30)
+            };
+            submitButton.Click += SubmitButton_Click;
+            this.Controls.Add(submitButton);
+
+            // Price label
+            priceLabel = new Label
+            {
+                Text = "Seat Price: $0.00",
+                Font = new Font("Arial", 12, FontStyle.Bold),
+                AutoSize = true,
+                Location = new Point(20, 130)
+            };
+            this.Controls.Add(priceLabel);
+
+            // Seat grid
+            seatGrid = new DataGridView
+            {
+                Location = new Point(20, 170),
+                Size = new Size(540, 280),
+                AllowUserToAddRows = false,
+                AllowUserToDeleteRows = false,
+                AllowUserToResizeRows = false,
+                AllowUserToResizeColumns = false,
+                RowHeadersVisible = false,
+                ColumnHeadersVisible = false,
+                ReadOnly = true,
+                ScrollBars = ScrollBars.None
+            };
+            this.Controls.Add(seatGrid);
+        }
+
+        private void InitializeSeatGrid()
+        {
+            // Define seat prices based on rows
+            decimal[] rowPrices = { 450m, 425m, 400m, 375m, 375m, 350m };
+
+            // Create 6 rows and 4 columns
+            seatGrid.ColumnCount = 4;
+            seatGrid.RowCount = 6;
+
+            // Set equal width for all columns
+            for (int i = 0; i < seatGrid.ColumnCount; i++)
+            {
+                seatGrid.Columns[i].Width = seatGrid.Width / seatGrid.ColumnCount;
+            }
+
+            // Set equal height for all rows
+            for (int i = 0; i < seatGrid.RowCount; i++)
+            {
+                seatGrid.Rows[i].Height = seatGrid.Height / seatGrid.RowCount;
+            }
+
+            // Fill the grid with seat prices
+            for (int row = 0; row < seatGrid.RowCount; row++)
+            {
+                for (int col = 0; col < seatGrid.ColumnCount; col++)
+                {
+                    seatGrid[col, row].Value = $"${rowPrices[row]}";
+                    seatGrid[col, row].Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                    seatGrid[col, row].Style.Font = new Font("Arial", 10, FontStyle.Bold);
+                    seatGrid[col, row].Style.BackColor = Color.LightGray;
+                }
+            }
+        }
+
+        private void SubmitButton_Click(object sender, EventArgs e)
+        {
+            // Reset all cells to default color
+            for (int row = 0; row < seatGrid.RowCount; row++)
+            {
+                for (int col = 0; col < seatGrid.ColumnCount; col++)
+                {
+                    seatGrid[col, row].Style.BackColor = Color.LightGray;
+                }
+            }
+
+            // Try to parse row and column inputs
+            if (int.TryParse(rowTextBox.Text, out int selectedRow) &&
+                int.TryParse(columnTextBox.Text, out int selectedCol))
+            {
+                // Convert to zero-based index if needed
+                selectedRow -= 1;
+                selectedCol -= 1;
+
+                // Validate the input
+                if (selectedRow >= 0 && selectedRow < seatGrid.RowCount &&
+                    selectedCol >= 0 && selectedCol < seatGrid.ColumnCount)
+                {
+                    // Highlight the selected seat
+                    seatGrid[selectedCol, selectedRow].Style.BackColor = Color.Yellow;
+
+                    // Display the price
+                    decimal[] rowPrices = { 450m, 425m, 400m, 375m, 375m, 350m };
+                    priceLabel.Text = $"Seat Price: ${rowPrices[selectedRow]:0.00}";
+                }
+                else
+                {
+                    MessageBox.Show("Invalid row or column. Please enter valid values.", "Error",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    priceLabel.Text = "Seat Price: $0.00";
+                }
+            }
+            else
+            {
+                MessageBox.Show("Please enter valid numbers for row and column.", "Error",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                priceLabel.Text = "Seat Price: $0.00";
+            }
+        }
+
+        private void exercise_Load(object sender, EventArgs e)
+        {
+            // You can keep this empty or add additional initialization code
+        }
+    }
+}
